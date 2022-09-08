@@ -16,7 +16,7 @@ class Piece():
         self.has_moved = True
         
 def location_empty(location):
-    
+    pass
             
 class Pawn(Piece):
     possible_moves = []
