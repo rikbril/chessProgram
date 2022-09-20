@@ -4,8 +4,11 @@ import pandas as pd
 ## which can be attacked and df_pinned is for all the places which can be attacked if the opponent moves a single piece
 df = pd.DataFrame(index=range(8), columns=range(8))
 df_whites = pd.DataFrame(index=range(8), columns=range(8))
-df_movement = pd.DataFrame(index=range(8), columns=range(8))
-df_pinned = pd.DataFrame(index=range(8), columns=range(8))
+df_blacks = pd.DataFrame(index=range(8), columns=range(8))
+df_whites_movement = pd.DataFrame(index=range(8), columns=range(8))
+df_blacks_movement = pd.DataFrame(index=range(8), columns=range(8))
+df_pinned_by_whites = pd.DataFrame(index=range(8), columns=range(8))
+df_pinned_by_blacks = pd.DataFrame(index=range(8), columns=range(8))
 
 ## places the pieces of both sides on the board
 def createBoard():
@@ -18,9 +21,12 @@ def createBoard():
     for row in range(0, 8):
         for column in range(0, 8):
             df.iloc[row, column] = 0
-            df_whites[row, column] = 0
-            df_movement.iloc[row, column] = 0
-            df_pinned.iloc[row, column] = 0
+            df_whites.iloc[row, column] = 0
+            df_whites_movement.iloc[row, column] = 0
+            df_pinned_by_whites.iloc[row, column] = 0
+            df_blacks.iloc[row, column] = 0
+            df_blacks_movement.iloc[row, column] = 0
+            df_pinned_by_blacks.iloc[row, column] = 0
 
     count = 0
     for i in range(len(startFen)):
