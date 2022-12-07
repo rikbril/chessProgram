@@ -1,288 +1,181 @@
-"""This file contains all the code regarding the placement of all the pieces, df_blacks/whites and the tracking of those pieces in the corresponding dataframes: 
-df_black/white_movement and df_pinned_by_black/white 
-
-these values are generated after an move is made
-
-for the tracking of the movement of a singular piece in a singular direction an dictionary is used. This dictionary has as key the location and as value an cummulative counter 
-with the value of 0,1 or 2. 
-0: if the value is 0 the piece has free movement in that direction 
-1: if the value is 1 it has encountered an singular opponent, the piece can move to this location and kill this opponent. by the next turn this route may be clear therefor
-this is regared an pinned piece in order to keep track of low value blocking pieces which protect high value pieces.
-2: once 2 opponents have been reached or an friencly piece is in the way it is not possible to attack these by the next turn therefore they are not tracked
-
-the sequences in which the paths are checked is clockwise, starting with 'north' up and ending with 'north-west' these are abriviated
-
-## TODO: knight movement, casteling and enpassant
-"""
-##
-moves_n = {}
-moves_ne = {}
-moves_e = {}
-moves_se = {}
-moves_s = {}
-moves_sw = {}
-moves_w = {}
-moves_nw = {}
-
-# showing all the directions in which an part can move, only being used in the final code
-def showMoves(self):
-    def showMovesN(self): return self.moves_n
-    def showMovesNE(self): return self.moves_ne
-    def showMovesE(self): return self.moves_e
-    def showMovesSE(self): return self.moves_se
-    def showMovesS(self): return self.moves_s
-    def showMovesSW(self): return self.moves_sw
-    def showMovesW(self): return self.moves_w
-    def showMovesNW(self): return self.moves_nw
+# def setDirections(self, directions=False):
+#     result = []
+#     if directions:
+#         for direction in directions:
+#             adjusting_directions = direction.split("-")
+#             result.append(self.locationAdjuster(adjusting_directions))            
+#     else:
+#         for direction in self.movement_directions:
+#             adjusting_directions = direction.split("-")
+#             result.append(self.locationAdjuster(adjusting_directions))
+#     return result
+# def setPressuredLists(self):
+#     for x in range(0,64):
+#         self.pressured_by_white[(f"{x//8, x%8}")] = 0
+#         self.pressured_by_black[(f"{x//8, x%8}")] = 0
+# def showName(self):
+#     print(self.name)
+# def showLocation(self):
+#     print(self.location)
+# def showOccupiedLocations(self):
+#     print(self.location_occupied)
+# def locationColor(self):
+#     return self.is_white
+# def showMovement(self):
+#     print(self.movement)
+# def showPinned(self):
+#     print(self.pinned)
+# def showMovementDirections(self):
+#     print(self.movement_directions)
     
-## generating the dictionaries of each direction and copying it to the individual piece
-def moveChecker(row, rowAdjuster, column, columnAdjuster, is_white, single_move=False):
-    """looks at the starting position of an piece and checks all the position in one singular path.
+# def dictNameFromLocation(self, location):
+#     for key in self.location_occupied:
+#         if self.location_occupied[key] == location:
+#             return key
 
-    Args:
-        row (int): row position of the piece.
-        rowAdjuster (False or +1/-1): If False then it does nothing. -1 it loops through lower row positions, +1 it loops through all higher row positions. 
-        column (int): column position of the piece.
-        columnAdjuster (False or +1/-1): If False then it does nothing. -1 it loops through lower row positions, +1 it loops through all higher row positions. 
-        is_white (bool): checks if the piece is white or black.
-        single_move (bool, optional): breaks loop is the piece can only move once. Defaults to False.
-
-    Returns:
-        {location: int}: returns the location and a value between 0 and 2. 0 for free movement. 1 if it encounters an opponent or when it can move to that position after a single 
-        move of the opposite player and 2 when it encountered a friendly piece or more than 1 opponent 
-    """
-    result = {}
-    loop_counter = 10
-    incrementing_rows = False
-    incrementing_columns = False
-    decrementing_rows = False
-    decrementing_columns = False
-    
-    if rowAdjuster == 1:
-        incrementing_rows = True
-        loop_counter = 8 - row
-    if rowAdjuster == -1:
-        decrementing_rows = True
-        loop_counter = row + 1
-    if columnAdjuster == 1:
-        incrementing_columns = True
-        if 8 - column < loop_counter:
-            loop_counter = 8 - column
-    if columnAdjuster == -1:
-        decrementing_columns = True
-        if column + 1 < loop_counter:
-            loop_counter = column + 1
-    
-    counter = 0
-    for x in range(1, loop_counter):
-        adjustedRow = row
-        adjustedColumn = column
-        if incrementing_rows == True:
-            adjustedRow += x 
-        if decrementing_rows == True:
-            adjustedRow -= x
-        if incrementing_columns == True:
-            adjustedColumn += x 
-        if decrementing_columns == True:
-            adjustedColumn -= x
+# def locationAdjuster(self, directions):
+#     row_adjustment = 0
+#     column_adjustment = 0
+#     for direction in directions:
+#         if direction == "north":
+#             row_adjustment -= 1
+#         if direction == "south":
+#             row_adjustment += 1
+#         if direction == "west":
+#             column_adjustment -= 1
+#         if direction == "east":
+#             column_adjustment += 1
+#     return [row_adjustment, column_adjustment]   
+# def locationChecker(self, row_adjustment, column_adjustment):
+#     result = []
+#     counter = 0
+#     looping = True
+#     adjusted_row = self.location[0] + row_adjustment
+#     adjusted_column = self.location[1] + column_adjustment
+#     while looping:   
+#         if adjusted_row < 0 or adjusted_row > 7:
+#             break
+#         if adjusted_column < 0 or adjusted_column > 7:
+#             break
         
-        counter = counter + addingLocation(adjustedRow, rowAdjuster, adjustedColumn, columnAdjuster, is_white)
-        if counter > 2:
-            counter = 2  
-        result[adjustedRow, adjustedColumn] = counter
-        if single_move == True:
-            return result
-    return result
-def addingLocation(row, rowAdjuster, column, columnAdjuster, is_white):
-    """adds the values to the moveChecker function
+#         for value in self.location_occupied:
+#             if self.location_occupied[value] == [adjusted_row, adjusted_column]:
+#                 is_white = chess_pieces[value].locationColor()
+#                 if is_white:
+#                     counter += 2
+#                 else:
+#                     counter += 1
+        
+#         if counter > 2:
+#             counter = 2
+                    
+#         result.append(counter)
+#         adjusted_row += row_adjustment
+#         adjusted_column += column_adjustment
 
-    Args:
-        row (int): row position on board
-        rowAdjuster (False or +1/-1): If False then it does nothing. -1 it loops through lower row positions, +1 it loops through all higher row positions. 
-        column (int): column position on board
-        columnAdjuster (False or +1/-1): If False then it does nothing. -1 it loops through lower row positions, +1 it loops through all higher row positions. 
-        is_white (bool): checks if the piece is white or black.
-
-    Returns:
-        int: 0 if the location is empty, 1 if the location occupied by an opponent, 2 if the location is occupied by a friendly piece.
-    """
-    if  (df_whites.iloc[row, column] == 1 and is_white == True) or (df_blacks.iloc[row, column] == 1 and is_white == False):
-        return 2 
-    elif df.iloc[row, column] == 1:
-        return 1
-    else:
-        return 0
- 
-def checkMovesN(self): self.moves_n = moveChecker(self.location[0], -1, self.location[1], False, self.is_white)
-def checkMovesNE(self): self.moves_ne = moveChecker(self.location[0], -1, self.location[1], 1, self.is_white)
-def checkMovesE(self): self.moves_e = moveChecker(self.location[0], False, self.location[1], 1, self.is_white)
-def checkMovesSE(self): self.moves_se = moveChecker(self.location[0], 1, self.location[1], 1, self.is_white)
-def checkMovesS(self): self.moves_s = moveChecker(self.location[0], 1, self.location[1], False, self.is_white)
-def checkMovesSW(self): self.moves_sw = moveChecker(self.location[0], 1, self.location[1], -1, self.is_white)
-def checkMovesW(self): self.moves_w = moveChecker(self.location[0], False, self.location[1], -1, self.is_white)
-def checkMovesNW(self): self.moves_nw = moveChecker(self.location[0], -1, self.location[1], -1, self.is_white)
-
-## adding the values of the dictionaries to the corresponding dataframes
-def setMovesN(self): 
-    counter = 0 
-    for move in self.moves_n: 
-        addMovement(move[0], move[1], self.is_white, self.moves_n[move], counter) 
-        counter = self.moves_n[move]
-def setMovesNE(self): 
-    counter = 0 
-    for move in self.moves_ne: 
-        addMovement(move[0], move[1], self.is_white, self.moves_ne[move], counter) 
-        counter = self.moves_ne[move]
-def setMovesE(self): 
-    counter = 0 
-    for move in self.moves_e: 
-        addMovement(move[0], move[1], self.is_white, self.moves_e[move], counter) 
-        counter = self.moves_e[move]
-def setMovesSE(self): 
-    counter = 0 
-    for move in self.moves_se: 
-        addMovement(move[0], move[1], self.is_white, self.moves_se[move], counter) 
-        counter = self.moves_se[move]
-def setMovesS(self): 
-    counter = 0 
-    for move in self.moves_s: 
-        addMovement(move[0], move[1], self.is_white, self.moves_s[move], counter) 
-        counter = self.moves_s[move]
-def setMovesSW(self): 
-    counter = 0 
-    for move in self.moves_sw: 
-        addMovement(move[0], move[1], self.is_white, self.moves_sw[move], counter) 
-        counter = self.moves_sw[move]
-def setMovesW(self): 
-    counter = 0 
-    for move in self.moves_w: 
-        addMovement(move[0], move[1], self.is_white, self.moves_w[move], counter) 
-        counter = self.moves_w[move]
-def setMovesNW(self): 
-    counter = 0 
-    for move in self.moves_nw: 
-        addMovement(move[0], move[1], self.is_white, self.moves_nw[move], counter) 
-        counter = self.moves_nw[move]
+#         if self.single_move:
+#             break
+#     return result
+# def locationName(self, row_adjustment, column_adjustment, single_move):
+#     encounters = {}
+#     looping = True
+#     adjusted_row = self.location[0] + row_adjustment
+#     adjusted_column = self.location[1] + column_adjustment
+#     while looping:   
+#         if adjusted_row < 0 or adjusted_row > 7:
+#             break
+#         if adjusted_column < 0 or adjusted_column > 7:
+#             break
     
-def addMovement(row, column, is_white, added_counter, previous_counter):
-    """takes the values from moveChecker function and adds it to the correct dataframes: white/black_movement and pinned_by_white/black
+#         name = self.dictNameFromLocation([adjusted_row, adjusted_column])
+#         if name:
+#             encounters[name] = [adjusted_row, adjusted_column]
+            
+#         adjusted_row += row_adjustment
+#         adjusted_column += column_adjustment
+        
+#         if single_move:
+#             break
+#     return encounters
 
-    Args:
-        row (int): row position on board
-        column (_type_): column position on board
-        is_white (bool): if the piece is white or black
-        added_counter (int): cummulative value counter of the current direction 
-        previous_counter (int): cummulative value counter of the latest direction, when lower it means that it is possible to attack/keep the piece pinned
-    """
-    ## checking if the piece is white
-    if is_white == True:
-        if added_counter == 0:
-            df_whites_movement.iloc[row, column] += 1
-            df_pinned_by_whites.iloc[row, column] += 1
-        elif added_counter == 1:
-            df_pinned_by_whites.iloc[row, column] += 1
-            if previous_counter == 0:
-                df_whites_movement.iloc[row, column] += 1
-        else:
-            if previous_counter < 2:
-                df_pinned_by_whites.iloc[row, column] += 1
+# def setMoves(self):
+#     self.movement = []
+#     self.pinned = []
+#     for direction in self.directions:
+#         self.movement.append(self.locationChecker(direction[0], direction[1]))
+        
+#     for x in range(len(self.movement)):
+#         previous_counter = 0
+#         self.pinned.append([])
+#         for y in range(len(self.movement[x])):
+#             if self.movement[x][y] < 2 or previous_counter < 2:
+#                 self.pinned[x].append(1)
+#             previous_counter = self.movement[x][y]
+#     self.addPinnedMoves()
+# def addPinnedMoves(self):
+#     for movement_direction in range(len(self.pinned)):
+#         if self.pinned[movement_direction] != None:
+#             adjusted_row = self.location[0] + self.directions[movement_direction][0]
+#             adjusted_column = self.location[1] + self.directions[movement_direction][1]
+#             for move in self.pinned[movement_direction]:
+#                 if self.is_white:
+#                     self.pressured_by_white[(f"{adjusted_row, adjusted_column}")] += 1
+#                 else:
+#                     self.pressured_by_black[(f"{adjusted_row, adjusted_column}")] += 1
+#                 adjusted_row += self.directions[movement_direction][0]
+#                 adjusted_column += self.directions[movement_direction][1] 
+
     
-    ## checking if the piece is black
-    if is_white == False:
-        if added_counter == 0:
-            df_blacks_movement.iloc[row, column] += 1
-            df_pinned_by_blacks.iloc[row, column] += 1
-        elif added_counter == 1:
-            df_pinned_by_blacks.iloc[row, column] += 1
-            if previous_counter == 0:
-                df_blacks_movement.iloc[row, column] += 1
-        else:
-            if previous_counter < 2:
-                df_pinned_by_blacks.iloc[row, column] += 1
 
-# removing the values of the dictionaries and the corresponding dataframes and clearing the dictionaries of the individual piece
-def removeMovesN(self): 
-    counter = 0 
-    for move in self.moves_n: 
-        removeMovement(move[0], move[1], self.is_white, self.moves_n[move], counter) 
-        counter = self.moves_n[move]
-    self.moves_n = {}
-def removeMovesNE(self): 
-    counter = 0 
-    for move in self.moves_ne: 
-        removeMovement(move[0], move[1], self.is_white, self.moves_ne[move], counter) 
-        counter = self.moves_ne[move]
-    self.moves_ne = {}
-def removeMovesE(self): 
-    counter = 0 
-    for move in self.moves_e: 
-        removeMovement(move[0], move[1], self.is_white, self.moves_e[move], counter) 
-        counter = self.moves_e[move]
-    self.moves_e = {}
-def removeMovesSE(self): 
-    counter = 0 
-    for move in self.moves_se: 
-        removeMovement(move[0], move[1], self.is_white, self.moves_se[move], counter) 
-        counter = self.moves_se[move]
-    self.moves_se = {}
-def removeMovesS(self): 
-    counter = 0 
-    for move in self.moves_s: 
-        removeMovement(move[0], move[1], self.is_white, self.moves_s[move], counter) 
-        counter = self.moves_s[move]
-    self.moves_s
-def removeMovesSW(self): 
-    counter = 0 
-    for move in self.moves_sw: 
-        removeMovement(move[0], move[1], self.is_white, self.moves_sw[move], counter) 
-        counter = self.moves_sw[move]
-    self.moves_sw = {}
-def removeMovesW(self): 
-    counter = 0 
-    for move in self.moves_W: 
-        removeMovement(move[0], move[1], self.is_white, self.moves_W[move], counter) 
-        counter = self.moves_W[move]
-    self.moves_W = {}
-def removeMovesNW(self): 
-    counter = 0 
-    for move in self.moves_nw: 
-        removeMovement(move[0], move[1], self.is_white, self.moves_nw[move], counter) 
-        counter = self.moves_nw[move]
-    self.moves_nw = {}
+# def removePinnedMovesOld(self):
+#     for movement_direction in range(len(self.pinned)):
+#         if self.pinned[movement_direction] != None:
+#             adjusted_row = self.location[0] + self.directions[movement_direction][0]
+#             adjusted_column = self.location[1] + self.directions[movement_direction][1]
+#             for move in self.pinned[movement_direction]:
+#                 if self.is_white:
+#                     self.pressured_by_white[(f"{adjusted_row, adjusted_column}")] -= 1
+#                 else:
+#                     self.pressured_by_black[(f"{adjusted_row, adjusted_column}")] -= 1
+#                 adjusted_row += self.directions[movement_direction][0]
+#                 adjusted_column += self.directions[movement_direction][1] 
+#     self.pinned = []            
 
-def removeMovement(row, column, is_white, added_counter, previous_counter):
-    """takes the values from moveChecker function and removes it from the correct dataframes: white/black_movement and pinned_by_white/black
-
-    Args:
-        row (int): row position on board
-        column (_type_): column position on board
-        is_white (bool): if the piece is white or black
-        added_counter (int): cummulative value counter of the current direction 
-        previous_counter (int): cummulative value counter of the latest direction, when lower it means that it is possible to attack/keep the piece pinned
-    """
-    ## checking if the piece is white
-    if is_white == True:
-        if added_counter == 0:
-            df_whites_movement.iloc[row, column] -= 1
-            df_pinned_by_whites.iloc[row, column] -= 1
-        elif added_counter == 1:
-            df_pinned_by_whites.iloc[row, column] -= 1
-            if previous_counter == 0:
-                df_whites_movement.iloc[row, column] -= 1
-        else:
-            if previous_counter < 2:
-                df_pinned_by_whites.iloc[row, column] -= 1
-
-    ## checking if the piece is black
-    if is_white == False:
-        if added_counter == 0:
-            df_blacks_movement.iloc[row, column] -= 1
-            df_pinned_by_blacks.iloc[row, column] -= 1
-        elif added_counter == 1:
-            df_pinned_by_blacks.iloc[row, column] -= 1
-            if previous_counter == 0:
-                df_blacks_movement.iloc[row, column] -= 1
-        else:
-            if previous_counter < 2:
-                df_pinned_by_blacks.iloc[row, column] -= 1
-  
+# def movePiece(self, new_location):
+#     self.removePinnedMoves()
+#     piece_on_new_location = self.dictNameFromLocation(new_location)
+#     if piece_on_new_location:
+#         # chess_pieces[piece_on_new_location].removePinnedMoves()
+#         # chess_pieces.pop(piece_on_new_location)
+#         self.location_occupied.pop(piece_on_new_location)
+    
+#     encounters_old_location = self.updateLocation()
+#     self.location = new_location
+#     self.location_occupied[self.name] = new_location
+#     self.setMoves()
+#     encounters_new_location = self.updateLocation()
+#     encounters = {**encounters_old_location, **encounters_new_location}
+    
+#     for encounter in encounters:  
+#         chess_pieces[encounter].removePinnedMoves()
+#         chess_pieces[encounter].setMoves()        
+# def updateLocation(self):
+#     update_movement = []
+#     encounters= {}
+#     update_directions = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west",
+#                         "north-north-east", "east-east-north", "east-east-south", "south-south-east", 
+#                         "south-south-west", "west-west-south", "west-west-north", "north-north-west"]
+#     directions = self.setDirections(update_directions)
+#     for direction in directions:
+#         update_movement.append([direction[0], direction[1]])
+    
+#     for direction in update_movement:
+#         if direction[0] == 2 or direction[0] == -2 or direction[1] == 2 or direction[1] == -2:
+#             lst = self.locationName(direction[0], direction[1], True)
+#             for encounter in lst:
+#                 encounters[encounter] = lst[encounter]
+#         else:
+#             lst = self.locationName(direction[0], direction[1], False)
+#             for encounter in lst:
+#                 encounters[encounter] = lst[encounter]
+#     return encounters
